@@ -11,18 +11,22 @@ import {
   Link,
   InlineStack,
   BlockStack,
-  Badge
+  Badge,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useCallback, useState } from "react";
 
 export default function SettingsPage() {
 
+
   const [apiKey, setApiKey] = useState("");
 
-  const handleVerify = useCallback(() => {
-      console.log("API Key verified");
+  const handleVerify = useCallback((e) => {
+    console.log("Button CLicked");
+    setApiKey(e.target.value);
   }, [apiKey]);
+  
+  
   return (
     <Page>
       <TitleBar title="Settings page" />
@@ -36,36 +40,38 @@ export default function SettingsPage() {
                 </Text>
               </Layout.Section>
               <BlockStack gap="300">
-                  <BlockStack>
-                    <InlineStack blockAlign="center" gap="300">
-                      <Box width="300px">
-                        <TextField
-                          value={apiKey}
-                          onChange={setApiKey}
-                          type="password"
-                          autoComplete="off"
-                        />
-                      </Box>
-                      <Box paddingBlockStart="5">
-                        <Button tone="critical" onClick={handleVerify}>Verify</Button>
-                      </Box>
-                    </InlineStack>
-                  </BlockStack>
-                  <BlockStack>
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Note: Please enter your API key to continue. You can
-                      generate
-                      <br /> your API key from{" "}
-                      <Link url="https://example.com" external>
-                        Alt Magic WordPress Page
-                      </Link>
-                    </Text>
-                  </BlockStack>
+                <BlockStack>
+                  <InlineStack blockAlign="center" gap="300">
+                    <Box width="300px">
+                      <TextField
+                        value={apiKey}
+                        onChange={setApiKey}
+                        type="password"
+                        autoComplete="off"
+                      />
+                    </Box>
+                    <Box paddingBlockStart="5">
+                      <Button tone="critical" onClick={handleVerify}>
+                        Verify
+                      </Button>
+                    </Box>
+                  </InlineStack>
+                </BlockStack>
+                <BlockStack>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Note: Please enter your API key to continue. You can
+                    generate
+                    <br /> your API key from{" "}
+                    <Link url="https://example.com" external>
+                      Alt Magic WordPress Page
+                    </Link>
+                  </Text>
+                </BlockStack>
               </BlockStack>
             </InlineGrid>
           </BlockStack>
 
-          <BlockStack gap="200">
+          {/* <BlockStack gap="200">
             <InlineGrid columns="2fr 8fr">
               <Layout.Section>
                 <Text as="h2" variant="headingSm">
@@ -109,8 +115,41 @@ export default function SettingsPage() {
                 </Text>
               </Text>
           </InlineStack>
+          </BlockStack> */}
+
+          <BlockStack gap="200">
+            <Layout.Section>
+              <Text as="h2" variant="headingSm">
+                How to get your API Key?
+              </Text>
+
+              <Text as="span" tone="subdued">
+                Watch our video tutorial to learn how to get your API key.
+              </Text>
+
+              <Box width="100%" padding="400" borderRadius="300">
+                <InlineStack align="center">
+                  <Box
+                    width="586px"
+                    padding="200"
+                    borderWidth="050"
+                    borderColor="border"
+                    borderRadius="300"
+                  >
+                    <iframe
+                      width="100%"
+                      height="330"
+                      src="https://www.youtube.com/embed/lHqcZ2Egz4Y"
+                      title="Alt Magic: How to get API Key"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ borderRadius: "8px", border: "none" }}
+                    />
+                  </Box>
+                </InlineStack>
+              </Box>
+            </Layout.Section>
           </BlockStack>
-          
         </BlockStack>
       </Card>
     </Page>
