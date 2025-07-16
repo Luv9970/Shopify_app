@@ -11,18 +11,58 @@ import {
   Link,
   InlineStack,
   BlockStack,
-  Badge
+  Badge,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useCallback, useState } from "react";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { getSessionToken } from "@shopify/app-bridge-utils";
+// import { useApi } from '@shopify/ui-extensions-react/checkout';
+
+const app = useAppBridge();
 
 export default function SettingsPage() {
-
   const [apiKey, setApiKey] = useState("");
+  const [storeUrl, setStoreUrl] = useState("");
+  const [shopifyUserEmail, setShopifyUserEmail] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleVerify = useCallback(() => {
-      console.log("API Key verified");
+  const handleVerify = useCallback(async () => {
+    // const {sessionToken} = useApi();
+
+    console.log("Entered API key:", apiKey);
+    console.log("App Bridge Instance", app);
+    try {
+      // console.log(app.protocol.subscribe);
+      
+      const token = app.config.apiKey;
+      console.log("Session token:", token);
+
+      // const token = await sessionToken.get();
+      // console.log('sessionToken.get()', token);
+
+      const response = await fetch("/shopify-verify-api-key", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          api_key: apiKey,
+          store_url: storeUrl,
+          // shp_user_id: shopifyUserEmail,
+        }),
+      });
+
+      // const result = await response.json();
+      // console.log("Verification result:", result);
+    } catch (error) {
+      console.error("Error verifying API key:", error);
+      //     // Optionally, handle error state here
+    }
+    console.log("At the end oh Handel Verify Function.");
   }, [apiKey]);
+
   return (
     <Page>
       <TitleBar title="Settings page" />
@@ -36,81 +76,120 @@ export default function SettingsPage() {
                 </Text>
               </Layout.Section>
               <BlockStack gap="300">
-                  <BlockStack>
-                    <InlineStack blockAlign="center" gap="300">
-                      <Box width="300px">
-                        <TextField
-                          value={apiKey}
-                          onChange={setApiKey}
-                          type="password"
-                          autoComplete="off"
-                        />
-                      </Box>
-                      <Box paddingBlockStart="5">
-                        <Button tone="critical" onClick={handleVerify}>Verify</Button>
-                      </Box>
-                    </InlineStack>
-                  </BlockStack>
-                  <BlockStack>
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Note: Please enter your API key to continue. You can
-                      generate
-                      <br /> your API key from{" "}
-                      <Link url="https://example.com" external>
-                        Alt Magic WordPress Page
-                      </Link>
+                <BlockStack>
+                  <InlineStack blockAlign="center" gap="300">
+                    <Box width="300px">
+                      <TextField
+                        value={apiKey}
+                        onChange={setApiKey}
+                        type="password"
+                        autoComplete="off"
+                      />
+                    </Box>
+                    <Box paddingBlockStart="5">
+                      <Button tone="critical" onClick={handleVerify}>
+                        Verify
+                      </Button>
+                    </Box>
+                  </InlineStack>
+                </BlockStack>
+                <BlockStack>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Note: Please enter your API key to continue. You can
+                    generate
+                    <br /> your API key from{" "}
+                    <Link url="https://example.com" external>
+                      Alt Magic WordPress Page
+                    </Link>
+                  </Text>
+                </BlockStack>
+              </BlockStack>
+            </InlineGrid>
+          </BlockStack>
+
+          {isLoggedIn ? (
+            <>
+              <BlockStack gap="200">
+                <InlineGrid columns="2fr 8fr">
+                  <Layout.Section>
+                    <Text as="h2" variant="headingSm">
+                      Account
                     </Text>
-                  </BlockStack>
-              </BlockStack>
-            </InlineGrid>
-          </BlockStack>
-
-          <BlockStack gap="200">
-            <InlineGrid columns="2fr 8fr">
-              <Layout.Section>
-                <Text as="h2" variant="headingSm">
-              Account
-            </Text>
-              </Layout.Section>
-              <Layout.Section>
-                <InlineStack gap="300">
-              <Avatar customer name="Advait Vaidya" />
-              <BlockStack>
-                <Text>Advait Vaidya</Text>
-                <Text tone="subdued">advait.postit@gmail.com</Text>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <InlineStack gap="300">
+                      <Avatar customer name="Advait Vaidya" />
+                      <BlockStack>
+                        <Text>Advait Vaidya</Text>
+                        <Text tone="subdued">advait.postit@gmail.com</Text>
+                      </BlockStack>
+                    </InlineStack>
+                  </Layout.Section>
+                </InlineGrid>
               </BlockStack>
 
-              </InlineStack>
-              </Layout.Section>
-            </InlineGrid>
-          </BlockStack>
+              <BlockStack gap="200">
+                <InlineGrid columns="2fr 8fr">
+                  <Layout.Section>
+                    <Text as="h2" variant="headingSm">
+                      Credits Available
+                    </Text>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Badge tone="success">9997</Badge>
+                  </Layout.Section>
+                </InlineGrid>
+              </BlockStack>
 
-          <BlockStack gap="200">
-            <InlineGrid columns="2fr 8fr">
+              <BlockStack gap="200">
+                <InlineStack>
+                  <Text as="p" variant="bodySm">
+                    <Link url="https://example.com" tone="critical">
+                      Remove API Key
+                    </Link>{" "}
+                    <Text as="span" tone="subdued">
+                      (Removing your API key will disable all Alt Magic features
+                      in your WordPress site.)
+                    </Text>
+                  </Text>
+                </InlineStack>
+              </BlockStack>
+            </>
+          ) : (
+            <BlockStack gap="200">
               <Layout.Section>
                 <Text as="h2" variant="headingSm">
-                  Credits Available
+                  How to get your API Key?
                 </Text>
-              </Layout.Section>
-              <Layout.Section>
-                <Badge tone="success">9997</Badge>
-              </Layout.Section>
-            </InlineGrid>
-          </BlockStack>
 
-          <BlockStack gap="200">
-            <InlineStack >
-                    <Text as="p" variant="bodySm">
-                <Link url="https://example.com" tone="critical">
-                  Remove API Key
-                </Link>{" "}
                 <Text as="span" tone="subdued">
-                  (Removing your API key will disable all Alt Magic features in your WordPress site.)
+                  Watch our video tutorial to learn how to get your API key.
                 </Text>
-              </Text>
-          </InlineStack>
-          </BlockStack>
-          
+
+                <Box width="100%" padding="400" borderRadius="300">
+                  <InlineStack align="center">
+                    <Box
+                      width="586px"
+                      padding="200"
+                      borderWidth="050"
+                      borderColor="border"
+                      borderRadius="300"
+                    >
+                      <iframe
+                        width="100%"
+                        height="330"
+                        src="https://www.youtube.com/embed/lHqcZ2Egz4Y"
+                        title="Alt Magic: How to get API Key"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ borderRadius: "8px", border: "none" }}
+                      />
+                    </Box>
+                  </InlineStack>
+                </Box>
+              </Layout.Section>
+            </BlockStack>
+          )}
         </BlockStack>
       </Card>
     </Page>
