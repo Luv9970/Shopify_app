@@ -24,44 +24,34 @@ const app = useAppBridge();
 export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
   const [storeUrl, setStoreUrl] = useState("");
-  const [shopifyUserEmail, setShopifyUserEmail] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleVerify = useCallback(async () => {
-    // const {sessionToken} = useApi();
 
-    console.log("Entered API key:", apiKey);
-    console.log("App Bridge Instance", app);
+    // console.log("Entered API key:", apiKey);
+    // console.log("App Bridge Instance", app);
     try {
-      // console.log(app.protocol.subscribe);
-      
-      const token = app.config.apiKey;
-      console.log("Session token:", token);
 
-      // const token = await sessionToken.get();
-      // console.log('sessionToken.get()', token);
-
-      const response = await fetch("/shopify-verify-api-key", {
+      const response = await fetch("https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-verify-api-key", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           api_key: apiKey,
-          store_url: storeUrl,
-          // shp_user_id: shopifyUserEmail,
+          store_url: app?.config?.shop,
         }),
       });
 
       // const result = await response.json();
       // console.log("Verification result:", result);
+      setIsLoggedIn(true);
     } catch (error) {
       console.error("Error verifying API key:", error);
-      //     // Optionally, handle error state here
     }
     console.log("At the end oh Handel Verify Function.");
   }, [apiKey]);
+
 
   return (
     <Page>
