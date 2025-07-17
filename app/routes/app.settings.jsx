@@ -17,7 +17,7 @@ import {
   SkeletonDisplayText,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState,  useEffect } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { HideIcon, ViewIcon } from "@shopify/polaris-icons";
 
@@ -29,6 +29,43 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   const [showApiKey, setShowApiKey] = useState(false);
+
+  useEffect(() => {
+  const autoLogin = async () => {
+    try {
+      console.log("Inside UseEffect")
+      setIsLoading(true);
+      const response = await fetch("https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-get-user-details", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          store_url: app.config.shop,
+        }),
+      });
+
+      const result = await response.json();
+      console.log("Auto login check result:", result);
+
+      if (response.ok && result) {
+        setUserData(result.user_details);
+        setIsLoading(false);
+        setIsLoggedIn(true);
+        // You can also set other user details here (e.g. credits, name, email, etc.)
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      console.error("Auto-login error:", error);
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  autoLogin();
+}, []);
 
   const handleVerify = useCallback(async () => {
     setIsLoading(true);
