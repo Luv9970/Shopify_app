@@ -12,46 +12,109 @@ import {
   InlineStack,
   BlockStack,
   Badge,
+  SkeletonBodyText,
+  SkeletonThumbnail,
+  SkeletonDisplayText,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { getSessionToken } from "@shopify/app-bridge-utils";
-// import { useApi } from '@shopify/ui-extensions-react/checkout';
+import { HideIcon, ViewIcon } from "@shopify/polaris-icons";
 
 const app = useAppBridge();
 
 export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
-  const [storeUrl, setStoreUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const handleVerify = useCallback(async () => {
-
+    setIsLoading(true);
     // console.log("Entered API key:", apiKey);
     // console.log("App Bridge Instance", app);
     try {
-
-      const response = await fetch("https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-verify-api-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-verify-api-key",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            api_key: apiKey,
+            store_url: app.config.shop,
+          }),
         },
-        body: JSON.stringify({
-          api_key: apiKey,
-          store_url: app?.config?.shop,
-        }),
-      });
+      );
 
-      // const result = await response.json();
+      const result = await response.json();
       // console.log("Verification result:", result);
-      setIsLoggedIn(true);
+      // console.log(response);
+
+      if (response.ok && result) {
+        setUserData(result.user_details);
+        // console.log("User_details data:", result.user_details);
+        // console.log("User_details data:", userData);
+        setIsLoading(false);
+        setIsLoggedIn(true);
+      } else {
+        console.warn("Invalid API Key or Store URL");
+        setIsLoggedIn(false);
+      }
     } catch (error) {
       console.error("Error verifying API key:", error);
+    } finally {
+      setIsLoading(false);
+      // console.log("At the end oh Handel Verify Function.");
     }
-    console.log("At the end oh Handel Verify Function.");
+    // console.log("Backend result:", userData);
   }, [apiKey]);
 
+  const handleRemoveApiKey = useCallback(() => {
+    const confirm = window.confirm(
+      "Are you sure you want to remove the API key?",
+    );
+    if (confirm) {
+      setApiKey("");
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  function SkeletonDisplay() {
+    return (
+      <>
+        <InlineGrid columns="2fr 8fr">
+          <Layout.Section>
+            <Text as="h2" variant="headingSm">
+              Account
+            </Text>
+          </Layout.Section>
+          <Layout.Section>
+            <InlineStack gap="300">
+              <SkeletonThumbnail size="medium" />
+              <BlockStack>
+                <SkeletonBodyText lines={1} />
+                <SkeletonBodyText lines={1} />
+              </BlockStack>
+            </InlineStack>
+          </Layout.Section>
+        </InlineGrid>
+
+        <InlineGrid columns="2fr 8fr">
+          <Layout.Section>
+            <Text as="h2" variant="headingSm">
+              Credits Available
+            </Text>
+          </Layout.Section>
+          <Layout.Section>
+            <SkeletonDisplayText size="small" />
+          </Layout.Section>
+        </InlineGrid>
+      </>
+    );
+  }
 
   return (
     <Page>
@@ -72,12 +135,26 @@ export default function SettingsPage() {
                       <TextField
                         value={apiKey}
                         onChange={setApiKey}
-                        type="password"
+                        type={showApiKey ? "text" : "password"}
                         autoComplete="off"
                       />
                     </Box>
+
+                    <Button
+                      icon={showApiKey ? ViewIcon : HideIcon}
+                      onClick={() => setShowApiKey((prev) => !prev)}
+                      accessibilityLabel={
+                        showApiKey ? "Hide API key" : "Show API key"
+                      }
+                    />
+
                     <Box paddingBlockStart="5">
-                      <Button tone="critical" onClick={handleVerify}>
+                      <Button
+                        tone="critical"
+                        onClick={handleVerify}
+                        loading={isLoading}
+                        disabled={isLoading}
+                      >
                         Verify
                       </Button>
                     </Box>
@@ -97,8 +174,13 @@ export default function SettingsPage() {
             </InlineGrid>
           </BlockStack>
 
-          {isLoggedIn ? (
+          {isLoading ? (
+            <BlockStack gap="200">
+              <SkeletonDisplay />
+            </BlockStack>
+          ) : isLoggedIn ? (
             <>
+              {/* Account section */}
               <BlockStack gap="200">
                 <InlineGrid columns="2fr 8fr">
                   <Layout.Section>
@@ -108,16 +190,17 @@ export default function SettingsPage() {
                   </Layout.Section>
                   <Layout.Section>
                     <InlineStack gap="300">
-                      <Avatar customer name="Advait Vaidya" />
+                      <Avatar customer name={userData.user_name} />
                       <BlockStack>
-                        <Text>Advait Vaidya</Text>
-                        <Text tone="subdued">advait.postit@gmail.com</Text>
+                        <Text>{userData.user_name}</Text>
+                        <Text tone="subdued">{userData.user_id}</Text>
                       </BlockStack>
                     </InlineStack>
                   </Layout.Section>
                 </InlineGrid>
               </BlockStack>
 
+              {/* Credits */}
               <BlockStack gap="200">
                 <InlineGrid columns="2fr 8fr">
                   <Layout.Section>
@@ -126,15 +209,16 @@ export default function SettingsPage() {
                     </Text>
                   </Layout.Section>
                   <Layout.Section>
-                    <Badge tone="success">9997</Badge>
+                    <Badge tone="success">{userData.credits_available}</Badge>
                   </Layout.Section>
                 </InlineGrid>
               </BlockStack>
 
+              {/* Remove Link */}
               <BlockStack gap="200">
                 <InlineStack>
                   <Text as="p" variant="bodySm">
-                    <Link url="https://example.com" tone="critical">
+                    <Link tone="critical" onClick={handleRemoveApiKey}>
                       Remove API Key
                     </Link>{" "}
                     <Text as="span" tone="subdued">
@@ -146,16 +230,15 @@ export default function SettingsPage() {
               </BlockStack>
             </>
           ) : (
+            /* Video Tutorial */
             <BlockStack gap="200">
               <Layout.Section>
                 <Text as="h2" variant="headingSm">
                   How to get your API Key?
                 </Text>
-
                 <Text as="span" tone="subdued">
                   Watch our video tutorial to learn how to get your API key.
                 </Text>
-
                 <Box width="100%" padding="400" borderRadius="300">
                   <InlineStack align="center">
                     <Box

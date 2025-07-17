@@ -3,7 +3,7 @@
 client_id = "38537b4153c587cf94d3a3d8ac434e61"
 name = "pragmatic-upside-app"
 handle = "pragmatic-upside-app-13"
-application_url = "https://palmer-sbjct-manhattan-williams.trycloudflare.com"
+application_url = "https://absent-writers-readings-lyrics.trycloudflare.com"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products"
 
 [auth]
-redirect_urls = ["https://palmer-sbjct-manhattan-williams.trycloudflare.com/auth/callback", "https://palmer-sbjct-manhattan-williams.trycloudflare.com/auth/shopify/callback", "https://palmer-sbjct-manhattan-williams.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://absent-writers-readings-lyrics.trycloudflare.com/auth/callback", "https://absent-writers-readings-lyrics.trycloudflare.com/auth/shopify/callback", "https://absent-writers-readings-lyrics.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
