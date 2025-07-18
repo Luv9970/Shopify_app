@@ -17,9 +17,10 @@ import {
   SkeletonDisplayText,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { useCallback, useState,  useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { HideIcon, ViewIcon } from "@shopify/polaris-icons";
+import toast from "react-hot-toast";
 
 const app = useAppBridge();
 
@@ -31,41 +32,48 @@ export default function SettingsPage() {
   const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
-  const autoLogin = async () => {
-    try {
-      console.log("Inside UseEffect")
-      setIsLoading(true);
-      const response = await fetch("https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-get-user-details", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          store_url: app.config.shop,
-        }),
-      });
+    const autoLogin = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          "https://alt-magic-api-eabaa2c8506a.herokuapp.com/shopify-get-user-details",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              store_url: app.config.shop,
+            }),
+          },
+        );
 
-      const result = await response.json();
-      console.log("Auto login check result:", result);
+        const result = await response.json();
+        // console.log("Auto login check result:", result);
 
-      if (response.ok && result) {
-        setUserData(result.user_details);
-        setIsLoading(false);
-        setIsLoggedIn(true);
-        // You can also set other user details here (e.g. credits, name, email, etc.)
-      } else {
+        if (response.ok && result) {
+          setUserData(result.user_details);
+          setIsLoading(false);
+          setIsLoggedIn(true);
+          toast.success("Logged in successfully!");
+
+        } else {
+          setIsLoggedIn(false);
+
+          toast.error("User not found. Please verify your API key.");
+        }
+      } catch (error) {
+        console.error("Login error:", error);
         setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error("Auto-login error:", error);
-      setIsLoggedIn(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  autoLogin();
-}, []);
+        toast.error("Failed to auto-login. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    autoLogin();
+  }, []);
 
   const handleVerify = useCallback(async () => {
     setIsLoading(true);
@@ -96,12 +104,17 @@ export default function SettingsPage() {
         // console.log("User_details data:", userData);
         setIsLoading(false);
         setIsLoggedIn(true);
+        toast.success("API key verified successfully!");
       } else {
         console.warn("Invalid API Key or Store URL");
         setIsLoggedIn(false);
+        alert("Unable to verify the key. Please check again."); 
+        toast.error("Invalid API key or store URL.");
       }
     } catch (error) {
       console.error("Error verifying API key:", error);
+      alert("Unable to verify the key. Please check again."); 
+      toast.error("Something went wrong during verification.");
     } finally {
       setIsLoading(false);
       // console.log("At the end oh Handel Verify Function.");
@@ -116,6 +129,7 @@ export default function SettingsPage() {
     if (confirm) {
       setApiKey("");
       setIsLoggedIn(false);
+      toast("API key removed.", { icon: "🗑️" });
     }
   }, []);
 

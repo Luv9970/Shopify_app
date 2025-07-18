@@ -8,6 +8,7 @@ import {
 import { AppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css"; // Import Polaris CSS
 import translations from "@shopify/polaris/locales/en.json"; // Required for i18n
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
       </head>
       <body>
         <AppProvider i18n={translations}>
+          <Toaster position="top-right" />
           <Outlet />
         </AppProvider>
         <ScrollRestoration />
